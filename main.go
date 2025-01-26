@@ -34,8 +34,15 @@ type RequestData struct {
 }
 
 func main() {
-	fmt.Println("Updating DNS...")
-	config := loadConfig()
+	path, err := os.Executable()
+	if err != nil {
+		log.Println(err)
+		panic(err)
+	}
+	path = path[:len(path)-8]
+	fmt.Println("path:", path)
+
+	config := loadConfig(path)
 	ip := getIP()
 
 	if *ip == config.IP {
@@ -43,55 +50,66 @@ func main() {
 		return
 	}
 
-	config.IP = *ip
-	_ = saveConfig(config)
+	fmt.Println("Updating DNS...")
 
-	endpoints := loadEndpoints()
+	config.IP = *ip
+	err = saveConfig(config, path)
+	if err != nil {
+		fmt.Println(err)
+		panic(err)
+	}
+
+	endpoints := loadEndpoints(path)
 
 	for _, endpoint := range *endpoints {
 		fmt.Println(endpoint.Name)
 		err := sendData(config.Auth, *ip, endpoint)
 		if err != nil {
+			fmt.Println(err)
 			log.Fatal(err)
 		}
 	}
 	fmt.Println("Done!")
 }
 
-func loadConfig() *Config {
-	content, err := os.ReadFile("./data/config.json")
+func loadConfig(wd string) *Config {
+	content, err := os.ReadFile(wd + "/data/config.json")
 	if err != nil {
+		fmt.Println(err)
 		panic(err)
 	}
 
 	var c Config
 	err = json.Unmarshal(content, &c)
 	if err != nil {
+		fmt.Println(err)
 		panic(err)
 	}
 
 	return &c
 }
 
-func saveConfig(config *Config) error {
+func saveConfig(config *Config, wd string) error {
 	file, _ := json.MarshalIndent(config, "", " ")
 
-	err := os.WriteFile("data/config.json", file, 0644)
+	err := os.WriteFile(wd+"/data/config.json", file, 0644)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func loadEndpoints() *[]Endpoint {
-	content, err := os.ReadFile("./data/endpoints.json")
+func loadEndpoints(wd string) *[]Endpoint {
+	content, err := os.ReadFile(wd + "/data/endpoints.json")
 	if err != nil {
+		fmt.Println(err)
 		panic(err)
 	}
 
 	var endpoints []Endpoint
 	err = json.Unmarshal(content, &endpoints)
 	if err != nil {
+		fmt.Println(err)
 		panic(err)
 	}
 
@@ -101,6 +119,7 @@ func loadEndpoints() *[]Endpoint {
 func getIP() *string {
 	resp, err := http.Get("https://ipinfo.io/ip")
 	if err != nil {
+		fmt.Println(err)
 		panic(err)
 	}
 	defer resp.Body.Close()
