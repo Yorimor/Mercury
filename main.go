@@ -17,9 +17,10 @@ type Config struct {
 }
 
 type Endpoint struct {
-	Name string `json:"name"`
-	Zone string `json:"zone"`
-	ID   string `json:"id"`
+	Name    string `json:"name"`
+	Zone    string `json:"zone"`
+	ID      string `json:"id"`
+	Proxied bool   `json:"proxied"`
 }
 
 type RequestData struct {
@@ -135,7 +136,7 @@ func sendData(auth string, ip string, endpoint Endpoint) error {
 	data := RequestData{
 		Content: ip,
 		Name:    endpoint.Name,
-		Proxied: false,
+		Proxied: endpoint.Proxied,
 		Type:    "A",
 		Comment: "Mercury::" + currentTime.Format("2006.01.02 15:04:05"),
 		ID:      endpoint.ID,

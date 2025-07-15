@@ -26,12 +26,14 @@ endpoints.json
   {
     "name": "DNS RECORD NAME e.g. one.domain.com",
     "zone": "DNS ZONE ID",
-    "id": "DNS RECORD ID"
+    "id": "DNS RECORD ID",
+    "proxied": true
   },
   {
     "name": "DNS RECORD NAME e.g. two.domain.com",
     "zone": "DNS ZONE ID",
     "id": "DNS RECORD ID"
+    // Leaving out "proxied" will default to false
   }
 ]
 ```
